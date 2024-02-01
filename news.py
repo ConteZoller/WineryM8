@@ -3,55 +3,31 @@
 #import tkinter as tk
 from tkinter import ttk
 
+
 def create_patch_notes(pane):
     patch_notes_text = """
-    # [Nome dell'App] Patch Notes - Versione X.Y.Z
+    # WineryM8 - Versione 1.0.0 (Beta) - Patch Notes
 
-    ## Novità principali
+    Benvenuto alla prima versione beta di WineryM8! In questa release introdurremo alcune funzionalità chiave per gestire la tua cantina in modo più efficiente.
 
-    1. **Nuova Funzionalità A**
-    - Descrizione dettagliata della nuova funzionalità A.
-    - Istruzioni su come utilizzare la nuova funzionalità.
+    ## Novità Principali:
 
-    2. **Miglioramenti alla Funzionalità B**
-    - Miglioramenti specifici e ottimizzazioni apportate alla funzionalità B.
-    - Feedback dagli utenti che ha portato a queste modifiche.
+    ### 1. **Cantina:**
+    - Aggiunta la visualizzazione dettagliata delle vasche, inclusi i livelli di HL, la tipologia e le aggiunte.
+    - Utilizza il pulsante "Vasche" nel menù per accedere a questa funzionalità.
 
-    ## Cambiamenti e Aggiornamenti
+    ### 2. **Magazzino:**
+    - Ora è possibile gestire il magazzino con facilità.
+    - Accedi alla sezione "Magazzino" attraverso il pulsante corrispondente nel menù.
 
-    3. **Interfaccia Utente**
-    - Modifiche all'interfaccia utente per migliorare la navigazione e l'usabilità.
-    - Risoluzione di problemi segnalati dagli utenti relativi all'UI.
+    ### 3. **Nuove Note sulla Patch:**
+    - Introdotta la sezione "Novità" per tener traccia delle modifiche e delle nuove funzionalità.
+    - Consulta le patch notes nella scheda "Novità" per rimanere aggiornato sulle ultime novità.
 
-    4. **Aggiornamenti delle Librerie di Terze Parti**
-    - Aggiornamento a [nome della libreria] versione X.Y.Z per migliorare la stabilità e la sicurezza.
-    - Eventuali nuove funzionalità introdotte dalle librerie aggiornate.
+    ## Miglioramenti e Aggiustamenti:
 
-    ## Risoluzione di Problemi
-
-    5. **Correzione del Bug C**
-    - Descrizione del bug C che è stato risolto.
-    - Segnalazioni degli utenti o dei test interni che hanno evidenziato il problema.
-
-    6. **Risoluzione dei Problemi di Prestazioni**
-    - Ottimizzazioni delle prestazioni per ridurre i tempi di caricamento o migliorare la reattività dell'app.
-    - Dettagli sui test delle prestazioni effettuati e i risultati ottenuti.
-
-    ## Altro
-
-    7. **Note sulla Compatibilità**
-    - Informazioni sulla compatibilità con sistemi operativi specifici, hardware o altri requisiti di sistema.
-    - Eventuali istruzioni per gli utenti che potrebbero essere influenzati da cambiamenti di compatibilità.
-
-    8. **Note di Sicurezza**
-    - Eventuali correzioni di sicurezza apportate in questa versione.
-    - Riferimenti a problemi di sicurezza risolti e dettagli su come gli utenti possono proteggersi.
-
-    ## Come Aggiornare
-
-    9. **Istruzioni per l'Aggiornamento**
-    - Passaggi dettagliati su come gli utenti possono aggiornare l'app alla versione più recente.
-    - Collegamenti diretti ai download o istruzioni integrate nell'app stessa.
+    - Aggiunta l'opzione per passare tra i temi "Chiaro" e "Scuro" nel menù.
+    - Ottimizzazioni delle prestazioni e miglioramenti generali.
     """
 
     notebook = ttk.Notebook(pane)
@@ -64,4 +40,4 @@ def create_patch_notes(pane):
 
     # Label
     label = ttk.Label(tab_patch_notes, text=patch_notes_text, justify="left")
-    label.grid(row=1, column=0, pady=10, columnspan=2)
+    label.grid(row=0, column=0, pady=10, columnspan=2, sticky="nsew")

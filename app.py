@@ -5,6 +5,10 @@ from tkinter import ttk
 from news import create_patch_notes
 from winery import create_winery_tabview
 from storage import create_storage_tabview
+from tank_management import create_tank_management_tabview
+
+#Da sostituire
+from testing import create_testing_tabview
 
 
 def change_theme():
@@ -18,6 +22,7 @@ def change_theme():
 
 
 def change_content(button_number):
+    # CHECK VAR CHECK NAMES
     # Rimuovi il contenuto attuale della seconda colonna
     for widget in pane_1.winfo_children():
         widget.destroy()
@@ -27,6 +32,12 @@ def change_content(button_number):
 
     elif button_number == 2:
         create_storage_tabview(pane_1)
+    
+    elif button_number == 3:
+        create_tank_management_tabview(pane_1)
+    
+    elif button_number == 4:
+        create_testing_tabview(pane_1)
 
     elif button_number == 0:
         create_patch_notes(pane_1)
@@ -69,16 +80,16 @@ check_frame = ttk.LabelFrame(root, text="Menù", padding=(20, 10))
 check_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 
 # Accentbutton
-vasche_button = ttk.Button(check_frame, text="Vasche", style="Accent.TButton", command=lambda: change_content(1))
+vasche_button = ttk.Button(check_frame, text="Cantina", style="Accent.TButton", command=lambda: change_content(1))
 vasche_button.grid(row=2, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
 magazzino_button = ttk.Button(check_frame, text="Magazzino", style="Accent.TButton", command=lambda: change_content(2))
 magazzino_button.grid(row=3, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_1 = ttk.Button(check_frame, text="Bloccato", style="Accent.TButton", state="disabled")
+blocked_button_1 = ttk.Button(check_frame, text="Gestione Vasca", style="Accent.TButton", command=lambda: change_content(3))
 blocked_button_1.grid(row=4, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_2 = ttk.Button(check_frame, text="Bloccato", style="Accent.TButton", state="disabled")
+blocked_button_2 = ttk.Button(check_frame, text="Testing", style="Accent.TButton", command=lambda: change_content(4))
 blocked_button_2.grid(row=5, column=0, padx=5, pady=20, sticky="nsew")
 
 # Switch
