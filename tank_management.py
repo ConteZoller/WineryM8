@@ -90,7 +90,7 @@ def create_tank_management_tab(notebook, name, excel_data, tank_id):
     tank_fill_percentage = calculate_fill_percentage(tank_current_level, tank_total_capacity)
 
     create_tank_view(tank_management_tab, tank_fill_percentage, tank_current_level, tank_total_capacity)
-    create_tank_view2(tank_management_tab, tank_fill_percentage, tank_current_level, tank_total_capacity)
+    #create_tank_view2(tank_management_tab, tank_fill_percentage, tank_current_level, tank_total_capacity)
 
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
