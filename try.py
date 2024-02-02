@@ -1,29 +1,47 @@
 import tkinter as tk
+from tkinter import ttk
 
-def create_progress_bar(parent, height):
-    pb = tk.Canvas(parent, width=20, height=height, bg='white', bd=1, relief='solid')
-    pb.create_rectangle(0, 0, 20, height)
-    pb.pack(side=tk.LEFT)
-    return pb
+class VerticalProgressBar(tk.Frame):
+    def __init__(self, master=None, thickness=None, length=None, value=None, maximum=None):
+        tk.Frame.__init__(self, master, width=thickness, height=length)
 
+        self.canvas = tk.Canvas(self, width=thickness, height=length, bg='white')
+        self.canvas.pack()
+
+        self.value = tk.DoubleVar()
+        self.maximum = tk.DoubleVar()
+
+        self.maximum.set(maximum if maximum else 100)
+        self.value.set(value if value else 0)
+
+        self.draw_progress()
+
+    def draw_progress(self):
+        max_val = self.maximum.get()
+        val = self.value.get()
+        percentage = min(val / max_val, 1.0)
+
+        height = self.canvas.winfo_reqheight() * percentage
+
+        self.canvas.create_rectangle(0, self.canvas.winfo_reqheight() - height, self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight(), fill='green')
+
+    def set_value(self, value):
+        self.value.set(value)
+        self.draw_progress()
+
+# Esempio di utilizzo
 root = tk.Tk()
-root.title("Multiple Progress Bars")
 
-# Altezza totale della ProgressBar
-total_height = 200
+thickness = 50
+length = 200
 
-# Creazione di 5 ProgressBar verticali
-progress_bar1 = create_progress_bar(root, total_height)
-progress_bar2 = create_progress_bar(root, total_height)
-progress_bar3 = create_progress_bar(root, total_height)
-progress_bar4 = create_progress_bar(root, total_height)
-progress_bar5 = create_progress_bar(root, total_height)
+progress_bar = VerticalProgressBar(root, thickness=thickness, length=length, value=50, maximum=100)
+progress_bar.pack(pady=20)
 
-# Aggiornamento delle ProgressBar con dei valori fittizi (puoi collegarle a una variabile di stato per avere un controllo dinamico)
-progress_bar1.create_rectangle(0, 0, 20, total_height * 0.2, fill='blue')
-progress_bar2.create_rectangle(0, 0, 20, total_height * 0.4, fill='green')
-progress_bar3.create_rectangle(0, 0, 20, total_height * 0.6, fill='yellow')
-progress_bar4.create_rectangle(0, 0, 20, total_height * 0.8, fill='orange')
-progress_bar5.create_rectangle(0, 0, 20, total_height, fill='red')
+progress = ttk.Progressbar(root, value=0, mode="determinate", orient="vertical")
+progress.pack(pady=20)
+
+# Imposta il valore della barra del progresso
+progress_bar.set_value(75)
 
 root.mainloop()

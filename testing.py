@@ -2,11 +2,9 @@
 import tkinter as tk
 from tkinter import ttk
 
-
-def update_progress(current_value, max_value, progress, percent_label):
-    progress["value"] = current_value
-    percent_label.config(text=f"{current_value}%")
-
+# DA SOSTITUIRE
+tank_id = 55
+tank_level = 34
 
 def create_progress_bar(container_frame, row, column):
     # Creazione della progress bar verticale
@@ -15,7 +13,7 @@ def create_progress_bar(container_frame, row, column):
     return progress
 
 
-def create_testing_tab(notebook, name):
+"""def create_testing_tab(notebook, name):
     CHECK_NAME_tab = ttk.Frame(notebook)
     CHECK_NAME_tab.columnconfigure(0, weight=1)  # Imposta la colonna 0 per occupare tutto lo spazio disponibile
     CHECK_NAME_tab.rowconfigure(0, weight=1)
@@ -25,23 +23,71 @@ def create_testing_tab(notebook, name):
     container_frame = ttk.Frame(CHECK_NAME_tab)
     container_frame.grid(row=0, column=0, sticky="nsew")
 
-    # Creazione delle progress bar verticali
-    progress = create_progress_bar(container_frame, row=0, column=0)
-    progress1 = create_progress_bar(container_frame, row=0, column=1)
-    progress2 = create_progress_bar(container_frame, row=0, column=2)
+    # Progressbar
+    progress = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress.grid(row=0, column=1, padx=(0, 50), pady=(5, 200))
+    progress1 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress1.grid(row=0, column=1, padx=(0, 65), pady=(5, 200))
+    progress2 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress2.grid(row=0, column=1, padx=(0, 80), pady=(5, 200))
+    progress3 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress3.grid(row=0, column=1, padx=(0, 95), pady=(5, 200))
+    progress4 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress4.grid(row=0, column=1, padx=(0, 110), pady=(5, 200))
+    progress5 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress5.grid(row=0, column=1, padx=(0, 125), pady=(5, 200))
+    progress6 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress6.grid(row=0, column=1, padx=(0, 140), pady=(5, 200))
+    progress7 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress7.grid(row=0, column=1, padx=(0, 155), pady=(5, 200))
+    progress8 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress8.grid(row=0, column=1, padx=(0, 170), pady=(5, 200))
+    progress9 = ttk.Progressbar(CHECK_NAME_tab, value=70, mode="determinate", orient="vertical")
+    progress9.grid(row=0, column=1, padx=(0, 185), pady=(5, 200))
+    
 
-    # Nascondi temporaneamente le colonne vuote
-    container_frame.grid_columnconfigure(1, weight=1)
-    container_frame.grid_columnconfigure(2, weight=1)
+    return CHECK_NAME_tab"""
+def create_testing_tab(notebook, name):
+    CHECK_NAME_tab = ttk.Frame(notebook)
+    CHECK_NAME_tab.columnconfigure(0, weight=1)
+    CHECK_NAME_tab.rowconfigure(0, weight=1)
+    notebook.add(CHECK_NAME_tab, text=name)
 
-    # Etichetta per mostrare la percentuale
-    percent_label = tk.Label(CHECK_NAME_tab, text="0%")
-    percent_label.grid(row=0, column=0, padx=10, pady=20)
+    # Creazione del frame contenitore
+    container_frame = ttk.Frame(CHECK_NAME_tab)
+    container_frame.grid(row=0, column=0, sticky="nsew")
 
-    # Chiamata alla funzione di aggiornamento della progress bar
-    update_progress(0, 100, progress, percent_label)
+    # Create a Frame for the Checkbuttons
+    tank_frame = ttk.LabelFrame(CHECK_NAME_tab, labelanchor="n", text=f"Livello vasca: {tank_level}%", padding=(20, 10))
+    tank_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nw")
+
+    # Progressbar
+    progress_container = ttk.Frame(tank_frame)
+    progress_container.grid(row=0, column=0)
+
+    info_container = ttk.Frame(tank_frame)
+    info_container.grid(row=1, column=0)
+
+    # Label
+    label = ttk.Label(info_container, text="34%", justify="center")
+    label.grid(row=1, column=0, pady=10, columnspan=2)
+
+    # Crea una singola istanza di Progressbar e duplicala
+    base_progress = ttk.Progressbar(progress_container, value=70, mode="determinate", orient="vertical", length=200)
+
+    for i in range(15):
+        progress = base_progress
+        if i > 0:
+            # Duplica la progress bar
+            progress = ttk.Progressbar(progress_container, value=70, mode="determinate", orient="vertical", length=200)
+        progress.grid(row=0, column=i)
+
+    # Imposta la configurazione della colonna per ridurre lo spazio
+    progress_container.grid_columnconfigure(0, weight=1)
 
     return CHECK_NAME_tab
+
+
 
 
 def create_testing_tabview(pane):

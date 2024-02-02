@@ -2,11 +2,32 @@
 
 from tkinter import ttk
 
-import pandas as pd
+def create_winery_tabview(pane, excel_data):
+    # Notebook
+    notebook = ttk.Notebook(pane)
 
-file_path = "vasche.xlsx"
+    # Tabview #1
+    all_tab = "Tutte"
+    create_treeview_tab(notebook, all_tab, excel_data)
 
-def create_treeview_tab(notebook, name):
+    # Tabview #2
+    ground_floor_tab = "Terra"
+    create_treeview_tab(notebook, ground_floor_tab, excel_data)
+
+    # Tabview #3
+    basement_floor_tab = "Interrato"
+    create_treeview_tab(notebook, basement_floor_tab, excel_data)
+
+    # Tabview #4
+    not_empty_tab = "Non vuote"
+    create_treeview_tab(notebook, not_empty_tab, excel_data)
+
+    # Tabview #5
+    empty_tab = "Vuote"
+    create_treeview_tab(notebook, empty_tab, excel_data)
+
+
+def create_treeview_tab(notebook, name, excel_data):
     # Tab #1
     treeview_tab = ttk.Frame(notebook)
     treeview_tab.columnconfigure(index=0, weight=1)
@@ -38,7 +59,7 @@ def create_treeview_tab(notebook, name):
     treeview.heading(2, text="Tipologia", anchor="center")
     treeview.heading(3, text="Aggiunte", anchor="w")
 
-    treeview_data = create_treeview_data_from_xls(file_path, name)
+    treeview_data = create_treeview_data(name, excel_data)
 
     # Insert treeview data
     for item in treeview_data:
@@ -47,57 +68,29 @@ def create_treeview_tab(notebook, name):
     # Pack the notebook and start the main loop
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
-def create_treeview_data_from_xls(file_path, name):
-    try:
-        df = pd.read_excel(file_path)
 
+def create_treeview_data(name, excel_data):
+
+    if not excel_data.empty:
         treeview_data = []
-
-        for row in df.itertuples(index=False):
+        end = "end"
+        for row in excel_data.itertuples(index=False):
             pid = "" if row.PID == 0 else str(row.PID)
             values = (f"{row.VAL}/{row.CAP}", row.TYPE, row.ADD) if row.VAL != 0 else (f"{row.VAL}/{row.CAP}", "")
 
             if name == "Terra" or name == "Interrato":
                 if row.LOC == name:
-                    treeview_data.append((pid, str(row.END), row.VASCA, str(row.VASCA), values))
+                    treeview_data.append((pid, end, row.VASCA, str(row.VASCA), values))
             elif name == "Non vuote":
                 if row.VAL != 0:
-                    treeview_data.append((pid, str(row.END), row.VASCA, str(row.VASCA), values))
+                    treeview_data.append((pid, end, row.VASCA, str(row.VASCA), values))
             elif name == "Vuote":
                 if row.VAL == 0:
-                    treeview_data.append((pid, str(row.END), row.VASCA, str(row.VASCA), values))
+                    treeview_data.append((pid, end, row.VASCA, str(row.VASCA), values))
             else:
-                treeview_data.append((pid, str(row.END), row.VASCA, str(row.VASCA), values))
+                treeview_data.append((pid, end, row.VASCA, str(row.VASCA), values))
 
         return treeview_data
 
-    except Exception as e:
-        print(f"Errore durante la lettura del file XLS: {e}")
-        return []  # Return an empty list instead of None
 
 
-
-
-def create_winery_tabview(pane):
-    # Notebook
-    notebook = ttk.Notebook(pane)
-
-    # Tabview #1
-    all_tab = "Tutte"
-    create_treeview_tab(notebook, all_tab)
-
-    # Tabview #2
-    ground_floor_tab = "Terra"
-    create_treeview_tab(notebook, ground_floor_tab)
-
-    # Tabview #3
-    basement_floor_tab = "Interrato"
-    create_treeview_tab(notebook, basement_floor_tab)
-
-    # Tabview #4
-    not_empty_tab = "Non vuote"
-    create_treeview_tab(notebook, not_empty_tab)
-
-    # Tabview #5
-    empty_tab = "Vuote"
-    create_treeview_tab(notebook, empty_tab)

@@ -6,10 +6,22 @@ from news import create_patch_notes
 from winery import create_winery_tabview
 from storage import create_storage_tabview
 from tank_management import create_tank_management_tabview
+import pandas as pd
 
 #Da sostituire
 from testing import create_testing_tabview
 
+# DA CAMBIARE
+excel_file_path = "vasche.xlsx"
+
+def read_from_excel(file_path):
+    try:
+        df = pd.read_excel(file_path)
+        return df
+    
+    except Exception as e:
+        print(f"Errore durante la lettura del file XLS: {e}")
+        return []  # Return an empty list instead of None
 
 def change_theme():
     current_theme = style.theme_use()
@@ -28,13 +40,13 @@ def change_content(button_number):
         widget.destroy()
 
     if button_number == 1:
-        create_winery_tabview(pane_1)
+        create_winery_tabview(pane_1, excel_data)
 
     elif button_number == 2:
         create_storage_tabview(pane_1)
     
     elif button_number == 3:
-        create_tank_management_tabview(pane_1)
+        create_tank_management_tabview(pane_1, excel_data)
     
     elif button_number == 4:
         create_testing_tabview(pane_1)
@@ -61,6 +73,8 @@ root.tk.call("source", "forest-dark.tcl")
 # Set the theme with the theme_use method
 style.theme_use("forest-dark")
 
+excel_data = read_from_excel(excel_file_path)
+
 # Panedwindow
 paned = ttk.PanedWindow(root)
 paned.grid(row=0, column=1, pady=(25, 5), sticky="nsew", rowspan=3)
@@ -76,30 +90,33 @@ change_content(0)
 switch_var = tk.BooleanVar()
 
 # Create a Frame for the Checkbuttons
-check_frame = ttk.LabelFrame(root, text="Menù", padding=(20, 10))
-check_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
+sidebar_frame = ttk.LabelFrame(root, labelanchor="n", text="Menù", padding=(20, 10))
+sidebar_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 
 # Accentbutton
-vasche_button = ttk.Button(check_frame, text="Cantina", style="Accent.TButton", command=lambda: change_content(1))
+vasche_button = ttk.Button(sidebar_frame, text="Cantina", style="Accent.TButton", command=lambda: change_content(1))
 vasche_button.grid(row=2, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-magazzino_button = ttk.Button(check_frame, text="Magazzino", style="Accent.TButton", command=lambda: change_content(2))
+magazzino_button = ttk.Button(sidebar_frame, text="Magazzino", style="Accent.TButton", command=lambda: change_content(2))
 magazzino_button.grid(row=3, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_1 = ttk.Button(check_frame, text="Gestione Vasca", style="Accent.TButton", command=lambda: change_content(3))
+blocked_button_1 = ttk.Button(sidebar_frame, text="Gestione Vasca", style="Accent.TButton", command=lambda: change_content(3))
 blocked_button_1.grid(row=4, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_2 = ttk.Button(check_frame, text="Testing", style="Accent.TButton", command=lambda: change_content(4))
+blocked_button_2 = ttk.Button(sidebar_frame, text="Testing", style="Accent.TButton", command=lambda: change_content(4))
 blocked_button_2.grid(row=5, column=0, padx=5, pady=20, sticky="nsew")
 
 # Switch
-theme_switch = ttk.Checkbutton(check_frame, text="Chiaro/Scuro", style="Switch", variable=switch_var, command=change_theme)
+theme_switch = ttk.Checkbutton(sidebar_frame, text="Chiaro/Scuro", style="Switch", variable=switch_var, command=change_theme)
 theme_switch.grid(row=9, column=0, padx=5, pady=20, sticky="nsew")
 
 # Sizegrip
 sizegrip = ttk.Sizegrip(root)
 sizegrip.grid(row=100, column=100, padx=(0, 5), pady=(0, 5))
 
+
+
+################################ CHECK SUL FUNZIONAMENTO
 # Center the window, and set minsize
 root.update()
 root.minsize(root.winfo_width(), root.winfo_height())
