@@ -9,7 +9,7 @@ from tank_management import create_tank_management_tabview
 import pandas as pd
 
 #Da sostituire
-from testing import create_testing_tabview
+#from testing import create_testing_tabview
 
 # DA CAMBIARE
 excel_file_path = "vasche.xlsx"
@@ -46,10 +46,10 @@ def change_content(button_number):
         create_storage_tabview(pane_1)
     
     elif button_number == 3:
-        create_tank_management_tabview(pane_1, excel_data)
+        create_tank_management_tabview(pane_1)
     
-    elif button_number == 4:
-        create_testing_tabview(pane_1)
+    #elif button_number == 4:
+    #    create_testing_tabview(pane_1)
 
     elif button_number == 0:
         create_patch_notes(pane_1)
@@ -73,15 +73,17 @@ root.tk.call("source", "forest-dark.tcl")
 # Set the theme with the theme_use method
 style.theme_use("forest-dark")
 
+
+##########################################################################
 excel_data = read_from_excel(excel_file_path)
 
 # Panedwindow
 paned = ttk.PanedWindow(root)
-paned.grid(row=0, column=1, pady=(25, 5), sticky="nsew", rowspan=3)
+paned.grid(row=0, column=1, pady=(25, 5), sticky="nsew")#, rowspan=3)
 
 # Pane #1
 pane_1 = ttk.Frame(paned)
-paned.add(pane_1, weight=3)
+paned.add(pane_1, weight=1)
 
 # Set the content to patch notes
 change_content(0)
