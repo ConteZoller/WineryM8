@@ -23,7 +23,7 @@ def empty_tank(progress_bars, tank_id, tank_frame_label, label_widget):
 
     # Decrementa gradualmente tutte le barre di avanzamento
     for progress in progress_bars:
-        decrement_progress(progress, target_value, decrement_amount=decrement_per_progress * 2)  # Riduci il decremento
+        decrement_progress(progress, target_value, decrement_amount=decrement_per_progress * 2) 
 
     # Aggiorna i dati nel DataFrame excel_data con il nuovo livello del serbatoio
     update_tank_level(tank_id, new_current_level=0)
@@ -41,50 +41,7 @@ def empty_tank(progress_bars, tank_id, tank_frame_label, label_widget):
     label_widget.update_idletasks()
 
 
-
-"""def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget): #current_level, total_capacity,
-    def increment_progress(progress, target_value, increment_amount=1):
-        current_value = progress["value"]
-        print(current_value)
-        new_value = min(current_value + increment_amount, target_value)
-        progress["value"] = new_value
-        if current_value < new_value:
-            progress.after(10, increment_progress, progress, target_value, increment_amount)  # Chiamata ricorsiva dopo 10 millisecondi
-    tank_data = extract_tank_data(tank_id)
-    tank_current_level = tank_data['VAL'].values[0]
-    max_addition = total_capacity - tank_current_level
-
-    # Chiedi all'utente la quantità da aggiungere
-    user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
-
-    # Verifica se l'utente ha inserito un valore valido
-    if user_input is not None and user_input >= 0 and user_input <= max_addition:
-        total_remaining_capacity = total_capacity - sum(progress["value"] for progress in progress_bars)
-
-        # Calcola l'incremento proporzionale alla capacità rimanente per tutte le barre di avanzamento
-        increment_per_progress = (user_input / total_remaining_capacity)
-
-        # Incrementa gradualmente tutte le barre di avanzamento
-        for progress in progress_bars:
-            target_value = min(progress["value"] + user_input, progress["maximum"])
-            increment_progress(progress, target_value, increment_amount=increment_per_progress)
-
-        # Aggiorna i dati nel DataFrame excel_data con il nuovo livello del serbatoio
-        update_tank_level(tank_id, new_current_level=tank_current_level + user_input)
-
-        # Aggiorna il testo nel ttk.LabelFrame
-        tank_data = extract_tank_data(tank_id)
-        tank_current_level = tank_data['VAL'].values[0]
-        tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
-        tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
-
-        # Aggiorna il testo nel ttk.Label
-        label_widget["text"] = f"{tank_current_level} / {total_capacity} HL"
-        tank_frame_label.update_idletasks()
-        label_widget.update_idletasks()"""
-
-
-def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget):
+"""def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget):
     def increment_progress(progress, target_value, current_value, increment_amount=1):
         new_value = min(current_value + increment_amount, target_value)
         progress["value"] = new_value
@@ -114,7 +71,43 @@ def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_wi
 
         label_widget["text"] = f"{tank_current_level} / {total_capacity} HL"
         tank_frame_label.update_idletasks()
+        label_widget.update_idletasks()"""
+
+def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget):
+    def increment_progress(progress, target_value, current_value, increment_amount=1):
+        new_value = min(current_value + increment_amount, target_value)
+        progress["value"] = new_value
+        if current_value < new_value:
+            progress.after(10, increment_progress, progress, target_value, new_value, increment_amount)
+
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    max_addition = total_capacity - tank_current_level
+
+    user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
+
+    if user_input is not None and 0 <= user_input <= max_addition:
+        increment_per_progress = (user_input / (total_capacity - tank_current_level)) * 2
+
+        for progress in progress_bars:
+            target_value = min(progress["value"] + user_input, progress["maximum"])
+            increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
+
+        update_tank_level(tank_id, new_current_level=tank_current_level + user_input)
+
+        tank_data = extract_tank_data(tank_id)
+        tank_current_level = tank_data['VAL'].values[0]
+        tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
+        tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
+
+        label_widget["text"] = f"{tank_current_level} / {total_capacity} HL"
+        tank_frame_label.update_idletasks()
         label_widget.update_idletasks()
+
+
+
+
+
 
 
 
