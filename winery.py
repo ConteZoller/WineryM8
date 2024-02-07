@@ -1,33 +1,34 @@
 # winery.py
 
 from tkinter import ttk
+from data import read_from_excel
 
-def create_winery_tabview(pane, excel_data):
+def create_winery_tabview(pane):
     # Notebook
     notebook = ttk.Notebook(pane)
 
     # Tabview #1
     all_tab = "Tutte"
-    create_treeview_tab(notebook, all_tab, excel_data)
+    create_treeview_tab(notebook, all_tab)
 
     # Tabview #2
     ground_floor_tab = "Terra"
-    create_treeview_tab(notebook, ground_floor_tab, excel_data)
+    create_treeview_tab(notebook, ground_floor_tab)
 
     # Tabview #3
     basement_floor_tab = "Interrato"
-    create_treeview_tab(notebook, basement_floor_tab, excel_data)
+    create_treeview_tab(notebook, basement_floor_tab)
 
     # Tabview #4
     not_empty_tab = "Non vuote"
-    create_treeview_tab(notebook, not_empty_tab, excel_data)
+    create_treeview_tab(notebook, not_empty_tab)
 
     # Tabview #5
     empty_tab = "Vuote"
-    create_treeview_tab(notebook, empty_tab, excel_data)
+    create_treeview_tab(notebook, empty_tab)
 
 
-def create_treeview_tab(notebook, name, excel_data):
+def create_treeview_tab(notebook, name):
     # Tab #1
     treeview_tab = ttk.Frame(notebook)
     treeview_tab.columnconfigure(index=0, weight=1)
@@ -59,7 +60,7 @@ def create_treeview_tab(notebook, name, excel_data):
     treeview.heading(2, text="Tipologia", anchor="center")
     treeview.heading(3, text="Aggiunte", anchor="w")
 
-    treeview_data = create_treeview_data(name, excel_data)
+    treeview_data = create_treeview_data(name)
 
     # Insert treeview data
     for item in treeview_data:
@@ -69,8 +70,8 @@ def create_treeview_tab(notebook, name, excel_data):
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
 
-def create_treeview_data(name, excel_data):
-
+def create_treeview_data(name):
+    excel_data = read_from_excel()
     if not excel_data.empty:
         treeview_data = []
         end = "end"

@@ -8,7 +8,8 @@ def create_patch_notes(pane):
     patch_notes_text = """
     # WineryM8 - Versione 1.0.0 (Beta) - Patch Notes
 
-    Benvenuto alla prima versione beta di WineryM8! In questa release introdurremo alcune funzionalità chiave per gestire la tua cantina in modo più efficiente.
+    Benvenuto alla prima versione beta di WineryM8! In questa release introdurremo alcune funzionalità 
+    chiave per gestire la tua cantina in modo più efficiente.
 
     ## Novità Principali:
 
@@ -40,4 +41,4 @@ def create_patch_notes(pane):
 
     # Label
     label = ttk.Label(tab_patch_notes, text=patch_notes_text, justify="left")
-    label.grid(row=0, column=0, pady=10, columnspan=2, sticky="nsew")
+    label.grid(row=0, column=0, pady=10, columnspan=2, sticky="nw")

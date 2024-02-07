@@ -8,20 +8,6 @@ from storage import create_storage_tabview
 from tank_management import create_tank_management_tabview
 import pandas as pd
 
-#Da sostituire
-#from testing import create_testing_tabview
-
-# DA CAMBIARE
-excel_file_path = "vasche.xlsx"
-
-def read_from_excel(file_path):
-    try:
-        df = pd.read_excel(file_path)
-        return df
-    
-    except Exception as e:
-        print(f"Errore durante la lettura del file XLS: {e}")
-        return []  # Return an empty list instead of None
 
 def change_theme():
     current_theme = style.theme_use()
@@ -33,6 +19,7 @@ def change_theme():
         root.update_idletasks()
 
 
+
 def change_content(button_number):
     # CHECK VAR CHECK NAMES
     # Rimuovi il contenuto attuale della seconda colonna
@@ -40,7 +27,7 @@ def change_content(button_number):
         widget.destroy()
 
     if button_number == 1:
-        create_winery_tabview(pane_1, excel_data)
+        create_winery_tabview(pane_1)
 
     elif button_number == 2:
         create_storage_tabview(pane_1)
@@ -70,12 +57,10 @@ style = ttk.Style(root)
 root.tk.call("source", "forest-light.tcl")
 root.tk.call("source", "forest-dark.tcl")
 
+
 # Set the theme with the theme_use method
 style.theme_use("forest-dark")
 
-
-##########################################################################
-excel_data = read_from_excel(excel_file_path)
 
 # Panedwindow
 paned = ttk.PanedWindow(root)

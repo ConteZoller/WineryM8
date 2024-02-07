@@ -2,9 +2,22 @@
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import scrolledtext
 import pandas as pd
 import tkinter.simpledialog
 from data import *
+
+
+def invert_text_widget_colors(text_widget):
+    current_bg = text_widget.cget("bg")
+    current_fg = text_widget.cget("fg")
+
+    # Inverti i colori
+    new_bg = current_fg
+    new_fg = current_bg
+
+    # Imposta i nuovi colori
+    text_widget.configure(bg=new_bg, fg=new_fg)
 
 def empty_tank(progress_bars, tank_id, tank_frame_label, label_widget):
     def decrement_progress(progress, target_value, decrement_amount=1):
@@ -26,7 +39,7 @@ def empty_tank(progress_bars, tank_id, tank_frame_label, label_widget):
         decrement_progress(progress, target_value, decrement_amount=decrement_per_progress * 2) 
 
     # Aggiorna i dati nel DataFrame excel_data con il nuovo livello del serbatoio
-    update_tank_level(tank_id, new_current_level=0)
+    update_tank(tank_id, new_current_level=0)
 
     # Aggiorna il testo nel ttk.LabelFrame
     tank_data = extract_tank_data(tank_id)
@@ -40,38 +53,6 @@ def empty_tank(progress_bars, tank_id, tank_frame_label, label_widget):
     tank_frame_label.update_idletasks()
     label_widget.update_idletasks()
 
-
-"""def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget):
-    def increment_progress(progress, target_value, current_value, increment_amount=1):
-        new_value = min(current_value + increment_amount, target_value)
-        progress["value"] = new_value
-        if current_value < new_value:
-            progress.after(10, increment_progress, progress, target_value, new_value, increment_amount)
-
-    tank_data = extract_tank_data(tank_id)
-    tank_current_level = tank_data['VAL'].values[0]
-    max_addition = total_capacity - tank_current_level
-
-    user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
-
-    if user_input is not None and 0 <= user_input <= max_addition:
-        total_remaining_capacity = total_capacity - sum(progress["value"] for progress in progress_bars)
-        increment_per_progress = (user_input / total_remaining_capacity)
-
-        for progress in progress_bars:
-            target_value = min(progress["value"] + user_input, progress["maximum"])
-            increment_progress(progress, target_value, progress["value"] + user_input, increment_amount=increment_per_progress)
-
-        update_tank_level(tank_id, new_current_level=tank_current_level + user_input)
-
-        tank_data = extract_tank_data(tank_id)
-        tank_current_level = tank_data['VAL'].values[0]
-        tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
-        tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
-
-        label_widget["text"] = f"{tank_current_level} / {total_capacity} HL"
-        tank_frame_label.update_idletasks()
-        label_widget.update_idletasks()"""
 
 def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_widget):
     def increment_progress(progress, target_value, current_value, increment_amount=1):
@@ -93,7 +74,7 @@ def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_wi
             target_value = min(progress["value"] + user_input, progress["maximum"])
             increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
 
-        update_tank_level(tank_id, new_current_level=tank_current_level + user_input)
+        update_tank(tank_id, new_current_level=tank_current_level + user_input)
 
         tank_data = extract_tank_data(tank_id)
         tank_current_level = tank_data['VAL'].values[0]
@@ -105,15 +86,6 @@ def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, label_wi
         label_widget.update_idletasks()
 
 
-
-
-
-
-
-
-
-
-
 def calculate_fill_percentage(current_level, total_capacity):
     if total_capacity <= 0:
         raise ValueError("The total capacity of the tank must be greater than zero.")
@@ -122,65 +94,91 @@ def calculate_fill_percentage(current_level, total_capacity):
     return fill_percentage
 
 def create_tank_view(tank_management_tab, tank_id):
-        tank_data = extract_tank_data(tank_id)
-        tank_current_level = tank_data['VAL'].values[0]
-        tank_total_capacity = tank_data['CAP'].values[0]
-        tank_fill_percentage = calculate_fill_percentage(tank_current_level, tank_total_capacity)
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    tank_total_capacity = tank_data['CAP'].values[0]
+    tank_fill_percentage = calculate_fill_percentage(tank_current_level, tank_total_capacity)
 
-        # Create a Frame for the Checkbuttons
-        tank_frame = ttk.LabelFrame(tank_management_tab, labelanchor="n", text=f"Livello vasca: {tank_fill_percentage}%", padding=(20, 10))
-        tank_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nw")
+    # Create a Frame for the Checkbuttons
+    tank_frame = ttk.LabelFrame(tank_management_tab, labelanchor="n", text=f"Livello vasca: {tank_fill_percentage}%", padding=(20, 10))
+    tank_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nw")
 
-        tank_border = ttk.LabelFrame(tank_frame, labelanchor="n")
-        tank_border.grid(row=0, column=0, pady=20)
+    tank_frame.columnconfigure(0, weight=1)
+    tank_frame.rowconfigure(0, weight=1)
 
-        # Progressbar
-        progress_container = ttk.Frame(tank_border)
-        progress_container.grid(row=0, column=0)
+    tank_border = ttk.LabelFrame(tank_frame, labelanchor="n")
+    tank_border.grid(row=0, column=0, pady=20, sticky="nesw")
 
-        # Separator
-        separator = ttk.Separator(tank_frame)
-        separator.grid(row=1, column=0, pady=5, sticky="ew")
+    # Progressbar
+    progress_container = ttk.Frame(tank_border)
+    progress_container.grid(row=0, column=0)
 
-        info_container = ttk.Frame(tank_frame)
-        info_container.grid(row=2, column=0)
+    # Separator
+    separator = ttk.Separator(tank_frame)
+    separator.grid(row=1, column=0, pady=5, sticky="ew")
 
-        # Label
-        label = ttk.Label(info_container, text=f"{tank_current_level} / {tank_total_capacity} HL", justify="center")
-        label.grid(row=2, column=0, pady=10, columnspan=2)
+    
 
-        empty_button = ttk.Button(info_container, text="Svuota Tank", command=lambda: empty_tank(progress_bars, tank_id, tank_frame, label))
-        empty_button.grid(row=3, column=0, pady=10, columnspan=2)
-        
-        fill_button = ttk.Button(info_container, text="Riempi Tank", command=lambda: fill_tank(progress_bars, tank_total_capacity, tank_id, tank_frame, label))
-        fill_button.grid(row=4, column=0, pady=10, columnspan=2)
+    # Label
+    label = ttk.Label(tank_frame, text=f"{tank_current_level} / {tank_total_capacity} HL", justify="center")
+    label.grid(row=2, column=0, pady=10)
 
-        
 
-        progress_bars = []
-        for i in range(15):
-            progress = ttk.Progressbar(progress_container, value=tank_current_level, mode="determinate", orient="vertical", length=200, maximum=tank_total_capacity)
-            progress.grid(row=0, column=i)
-            progress_bars.append(progress)
+    ############################################################
+    # Create a Frame for the Checkbuttons
 
-        # Imposta la configurazione della colonna per ridurre lo spazio
-        progress_container.grid_columnconfigure(0, weight=1)
+    tank_commands_frame = ttk.Frame(tank_management_tab)
+    tank_commands_frame.grid(row=0, column=1, padx=(20, 10), pady=(20, 10), sticky="nesw")
+
+    tank_commands_border = ttk.LabelFrame(tank_commands_frame, labelanchor="n", text="commands", padding=(20, 10))
+    tank_commands_border.grid(row=0, column=0, pady=20, sticky="nesw")
+
+    empty_button = ttk.Button(tank_commands_border, text="Svuota Tank", command=lambda: empty_tank(progress_bars, tank_id, tank_frame, label))
+    empty_button.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
+    
+    fill_button = ttk.Button(tank_commands_border, text="Riempi Tank", command=lambda: fill_tank(progress_bars, tank_total_capacity, tank_id, tank_frame, label))
+    fill_button.grid(row=1, column=0, padx=10, pady=10, sticky="nesw")
+
+    items_commands_border = ttk.LabelFrame(tank_commands_frame, labelanchor="n", text="commands", padding=(20, 10))
+    items_commands_border.grid(row=1, column=0, pady=20, sticky="nesw")
+    invert_color_button = ttk.Button(items_commands_border, text="cambia", command=lambda: invert_text_widget_colors(entry))
+    invert_color_button.grid(row=0, column=0,  padx=10,pady=10, sticky="nesw")
+    
+    ############################################################
+    # Create a Frame for the Checkbuttons
+    items_frame = ttk.LabelFrame(tank_management_tab, labelanchor="n", text=f"Aggiunte", padding=(20, 10))
+    items_frame.grid(row=0, column=2, padx=(20, 10), pady=(20, 10), sticky="nesw")
+
+    items_frame.columnconfigure(0, weight=1)
+    items_frame.rowconfigure(0, weight=1)
+
+    # Entry
+    entry = scrolledtext.ScrolledText(items_frame)
+    items = tank_data['ADD'].values[0]
+    for item in items:
+        entry.insert("end", item)
+    entry.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+
+    progress_bars = []
+    for i in range(29):
+        progress = ttk.Progressbar(progress_container, value=tank_current_level, mode="determinate", orient="vertical", length=500, maximum=tank_total_capacity)
+        progress.grid(row=0, column=i)
+        progress_bars.append(progress)
+
 
 
 def create_tank_management_tab(notebook, tank_id):
     tank_management_tab = ttk.Frame(notebook)
     tank_management_tab.columnconfigure(0, weight=1)
     tank_management_tab.rowconfigure(0, weight=1)
+    tank_management_tab.columnconfigure(1, weight=1)
+    tank_management_tab.rowconfigure(1, weight=1)
     notebook.add(tank_management_tab, text=f"Vasca {tank_id}")
-
-    # Creazione del frame contenitore
-    container_frame = ttk.Frame(tank_management_tab)
-    container_frame.grid(row=0, column=0, pady=20, sticky="nsew")
 
     create_tank_view(tank_management_tab, tank_id)
 
-    notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
+    notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
 def create_tank_management_tabview(pane):
     # Notebook
@@ -189,6 +187,3 @@ def create_tank_management_tabview(pane):
     # Tabview #1
     tank_id = 4
     create_tank_management_tab(notebook, tank_id)
-
-
-
