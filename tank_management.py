@@ -6,6 +6,7 @@ from tkinter import scrolledtext
 import pandas as pd
 import tkinter.simpledialog
 from data import *
+from winery import create_treeview_data
 
 def increase_font_size(tank_textbox):
     current_size = tank_textbox.cget("font").split(" ")[-1]
@@ -61,6 +62,44 @@ def empty_tank(progress_bars, tank_id, tank_frame_label, tank_label_widget, wine
     tank_textbox_widget.update_idletasks()
     wine_type_label_widget.update_idletasks()
 
+def increment_tank(progress_bars, total_capacity, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget):
+    def increment_progress(progress, target_value, current_value, increment_amount=1):
+        new_value = min(current_value + increment_amount, target_value)
+        progress["value"] = new_value
+        if current_value < new_value:
+            progress.after(10, increment_progress, progress, target_value, new_value, increment_amount)
+
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    max_addition = total_capacity - tank_current_level
+    if max_addition > 0:
+        if tank_current_level:
+            tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
+        else:
+            wine_type_user_input = tkinter.simpledialog.askstring(f"Prodotto Vasca {tank_id}", f"Inserisci la tipologia di prodotto:")
+            tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
+
+        if tank_level_user_input is not None and 0 <= tank_level_user_input <= max_addition:
+            increment_per_progress = (tank_level_user_input / (total_capacity - tank_current_level)) * 2
+
+            for progress in progress_bars:
+                target_value = min(progress["value"] + tank_level_user_input, progress["maximum"])
+                increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
+
+            update_tank(tank_id, new_current_level=tank_current_level + tank_level_user_input, wine_type=wine_type_user_input)
+
+            tank_data = extract_tank_data(tank_id)
+            tank_current_level = tank_data['VAL'].values[0]
+            tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
+            tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
+
+            tank_label_widget["text"] = "{} / {} HL".format(tank_data['VAL'].values[0], tank_data['CAP'].values[0])
+            wine_type_label_widget["text"] = tank_data['TYPE'].values[0]
+
+            tank_frame_label.update_idletasks()
+            wine_type_label_widget.update_idletasks()
+            tank_label_widget.update_idletasks()
+
 def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget):
     def increment_progress(progress, target_value, current_value, increment_amount=1):
         new_value = min(current_value + increment_amount, target_value)
@@ -71,32 +110,29 @@ def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, tank_lab
     tank_data = extract_tank_data(tank_id)
     tank_current_level = tank_data['VAL'].values[0]
     max_addition = total_capacity - tank_current_level
-    if tank_current_level:
-        tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
-    else:
+    wine_type_user_input = tank_data['TYPE'].values[0]
+    if not tank_current_level:
         wine_type_user_input = tkinter.simpledialog.askstring(f"Prodotto Vasca {tank_id}", f"Inserisci la tipologia di prodotto:")
-        tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
 
-    if tank_level_user_input is not None and 0 <= tank_level_user_input <= max_addition:
-        increment_per_progress = (tank_level_user_input / (total_capacity - tank_current_level)) * 2
+    increment_per_progress = (max_addition / (total_capacity - tank_current_level)) * 2
 
-        for progress in progress_bars:
-            target_value = min(progress["value"] + tank_level_user_input, progress["maximum"])
-            increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
+    for progress in progress_bars:
+        target_value = min(progress["value"] + max_addition, progress["maximum"])
+        increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
 
-        update_tank(tank_id, new_current_level=tank_current_level + tank_level_user_input, wine_type=wine_type_user_input)
+    update_tank(tank_id, new_current_level=tank_current_level + max_addition, wine_type=wine_type_user_input)
 
-        tank_data = extract_tank_data(tank_id)
-        tank_current_level = tank_data['VAL'].values[0]
-        tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
-        tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
+    tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
 
-        tank_label_widget["text"] = "{} / {} HL".format(tank_data['VAL'].values[0], tank_data['CAP'].values[0])
-        wine_type_label_widget["text"] = tank_data['TYPE'].values[0]
+    tank_label_widget["text"] = "{} / {} HL".format(tank_data['CAP'].values[0], tank_data['CAP'].values[0])
+    wine_type_label_widget["text"] = tank_data['TYPE'].values[0]
 
-        tank_frame_label.update_idletasks()
-        wine_type_label_widget.update_idletasks()
-        tank_label_widget.update_idletasks()
+    tank_frame_label.update_idletasks()
+    wine_type_label_widget.update_idletasks()
+    tank_label_widget.update_idletasks()
 
 
 def calculate_fill_percentage(current_level, total_capacity):
@@ -107,7 +143,50 @@ def calculate_fill_percentage(current_level, total_capacity):
     return fill_percentage
 
 def decant_tank(progress_bars, tank_id, tank_frame_label, label_widget):
-    pass
+    show_decant_window(tank_id)
+
+def show_decant_window(tank_id):
+    # Crea una nuova finestra Toplevel
+    decant_window = tk.Toplevel()
+    decant_window.title(f"Travaso - Vasca {tank_id}")
+
+    # Create a Frame for the Treeview
+    treeFrame = ttk.Frame(decant_window)
+    treeFrame.pack(expand=True, fill="both", padx=5, pady=5)
+
+    # Scrollbar
+    treeScroll = ttk.Scrollbar(treeFrame)
+    treeScroll.pack(side="right", fill="y")
+
+    # Treeview
+    treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2), height=12)
+    treeview.pack(expand=True, fill="both")
+    treeScroll.config(command=treeview.yview)
+
+    # Treeview columns
+    treeview.column("#0", width=0, stretch=False)
+    treeview.column(1, anchor="center", stretch=True)
+    treeview.column(2, anchor="center", stretch=True)
+
+    # Treeview headings
+    treeview.heading(1, text="Vasca", anchor="center")
+    treeview.heading(2, text="HL", anchor="center")
+
+    treeview_data = create_treeview_data("Vuote")
+
+    # Insert treeview data
+    for item in treeview_data:
+        treeview.insert(parent=item[0], index=item[1], iid=item[2], text=item[3], values=item[4])
+
+    decant_commands_frame = ttk.Frame(decant_window)
+    decant_commands_frame.pack(expand=True, fill="both", padx=5, pady=5)
+
+    # Crea il pulsante con il nuovo metodo
+    decrease_font_size_button = ttk.Button(decant_commands_frame, text="Diminuisci", command=decrease_font_size)
+
+    # Posiziona il pulsante al centro senza farlo espandere completamente
+    decrease_font_size_button.pack(padx=10, pady=10, side="top", anchor="center")
+
 
 
 def create_tank_view(tank_management_tab, tank_id):
@@ -166,13 +245,13 @@ def create_tank_view(tank_management_tab, tank_id):
     empty_button = ttk.Button(tank_commands_border, text="Svuotamento", command=lambda: empty_tank(progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
     empty_button.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
 
-    fill_button = ttk.Button(tank_commands_border, text="Riempimento")
+    fill_button = ttk.Button(tank_commands_border, text="Riempimento", command=lambda: fill_tank(progress_bars, tank_total_capacity, tank_id, tank_frame, tank_label, info_label))
     fill_button.grid(row=1, column=0, padx=10, pady=10, sticky="nesw")
         
     input_empty_button = ttk.Button(tank_commands_border, text="Togli HL")
     input_empty_button.grid(row=2, column=0, padx=10, pady=10, sticky="nesw")
 
-    input_fill_button = ttk.Button(tank_commands_border, text="Aggiungi HL", command=lambda: fill_tank(progress_bars, tank_total_capacity, tank_id, tank_frame, tank_label, info_label))
+    input_fill_button = ttk.Button(tank_commands_border, text="Aggiungi HL", command=lambda: increment_tank(progress_bars, tank_total_capacity, tank_id, tank_frame, tank_label, info_label))
     input_fill_button.grid(row=3, column=0, padx=10, pady=10, sticky="nesw")
 
     decant_button = ttk.Button(tank_commands_border, text="Travaso", command=lambda: decant_tank(progress_bars, tank_id, tank_frame, tank_label))
@@ -189,11 +268,11 @@ def create_tank_view(tank_management_tab, tank_id):
     invert_color_button = ttk.Button(items_commands_border, text="Chiaro/Scuro", command=lambda: invert_text_widget_colors(tank_textbox))
     invert_color_button.grid(row=0, column=0,  padx=10,pady=10, sticky="nesw")
 
-    invert_color_button = ttk.Button(items_commands_border, text="Ingrandisci", command=lambda: increase_font_size(tank_textbox))
-    invert_color_button.grid(row=1, column=0,  padx=10,pady=10, sticky="nesw")
+    increase_font_size_button = ttk.Button(items_commands_border, text="Ingrandisci", command=lambda: increase_font_size(tank_textbox))
+    increase_font_size_button.grid(row=1, column=0,  padx=10,pady=10, sticky="nesw")
 
-    invert_color_button = ttk.Button(items_commands_border, text="Diminuisci", command=lambda: decrease_font_size(tank_textbox))
-    invert_color_button.grid(row=2, column=0,  padx=10,pady=10, sticky="nesw")
+    decrease_font_size_button = ttk.Button(items_commands_border, text="Diminuisci", command=lambda: decrease_font_size(tank_textbox))
+    decrease_font_size_button.grid(row=2, column=0,  padx=10,pady=10, sticky="nesw")
 
     save_button = ttk.Button(items_commands_border, text="Salva", command=lambda: update_tank(tank_id, new_items=tank_textbox.get("1.0", tk.END)))
     save_button.grid(row=3, column=0, padx=10, pady=10, sticky="nesw")

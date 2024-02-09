@@ -1,47 +1,70 @@
-import tkinter as tk
-from tkinter import ttk
+def fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget):
+    def increment_progress(progress, target_value, current_value, increment_amount=1):
+        new_value = min(current_value + increment_amount, target_value)
+        progress["value"] = new_value
+        if current_value < new_value:
+            progress.after(10, increment_progress, progress, target_value, new_value, increment_amount)
 
-class VerticalProgressBar(tk.Frame):
-    def __init__(self, master=None, thickness=None, length=None, value=None, maximum=None):
-        tk.Frame.__init__(self, master, width=thickness, height=length)
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    max_addition = total_capacity - tank_current_level
+    if tank_current_level:
+        tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
+    else:
+        wine_type_user_input = tkinter.simpledialog.askstring(f"Prodotto Vasca {tank_id}", f"Inserisci la tipologia di prodotto:")
+        tank_level_user_input = tkinter.simpledialog.askinteger(f"Riempi la Vasca {tank_id}", f"Inserisci un valore (massimo {max_addition}):")
 
-        self.canvas = tk.Canvas(self, width=thickness, height=length, bg='white')
-        self.canvas.pack()
+    if tank_level_user_input is not None and 0 <= tank_level_user_input <= max_addition:
+        increment_per_progress = (tank_level_user_input / (total_capacity - tank_current_level)) * 2
 
-        self.value = tk.DoubleVar()
-        self.maximum = tk.DoubleVar()
+        for progress in progress_bars:
+            target_value = min(progress["value"] + tank_level_user_input, progress["maximum"])
+            increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
 
-        self.maximum.set(maximum if maximum else 100)
-        self.value.set(value if value else 0)
+        update_tank(tank_id, new_current_level=tank_current_level + tank_level_user_input, wine_type=wine_type_user_input)
 
-        self.draw_progress()
+        tank_data = extract_tank_data(tank_id)
+        tank_current_level = tank_data['VAL'].values[0]
+        tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
+        tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
 
-    def draw_progress(self):
-        max_val = self.maximum.get()
-        val = self.value.get()
-        percentage = min(val / max_val, 1.0)
+        tank_label_widget["text"] = "{} / {} HL".format(tank_data['VAL'].values[0], tank_data['CAP'].values[0])
+        wine_type_label_widget["text"] = tank_data['TYPE'].values[0]
 
-        height = self.canvas.winfo_reqheight() * percentage
+        tank_frame_label.update_idletasks()
+        wine_type_label_widget.update_idletasks()
+        tank_label_widget.update_idletasks()
 
-        self.canvas.create_rectangle(0, self.canvas.winfo_reqheight() - height, self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight(), fill='green')
+def full_fill_tank(progress_bars, total_capacity, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget):
+    def increment_progress(progress, target_value, current_value, increment_amount=1):
+        new_value = min(current_value + increment_amount, target_value)
+        progress["value"] = new_value
+        if current_value < new_value:
+            progress.after(10, increment_progress, progress, target_value, new_value, increment_amount)
 
-    def set_value(self, value):
-        self.value.set(value)
-        self.draw_progress()
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    max_addition = total_capacity - tank_current_level
 
-# Esempio di utilizzo
-root = tk.Tk()
+    if not tank_current_level:
+        wine_type_user_input = tkinter.simpledialog.askstring(f"Prodotto Vasca {tank_id}", f"Inserisci la tipologia di prodotto:")
 
-thickness = 50
-length = 200
+    increment_per_progress = (max_addition / (total_capacity - tank_current_level)) * 2
 
-progress_bar = VerticalProgressBar(root, thickness=thickness, length=length, value=50, maximum=100)
-progress_bar.pack(pady=20)
+    for progress in progress_bars:
+        target_value = min(progress["value"] + max_addition, progress["maximum"])
+        increment_progress(progress, target_value, progress["value"], increment_amount=increment_per_progress)
 
-progress = ttk.Progressbar(root, value=0, mode="determinate", orient="vertical")
-progress.pack(pady=20)
+    update_tank(tank_id, new_current_level=tank_current_level + max_addition, wine_type=wine_type_user_input)
 
-# Imposta il valore della barra del progresso
-progress_bar.set_value(75)
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    tank_fill_percentage = calculate_fill_percentage(tank_current_level, total_capacity)
+    tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
 
-root.mainloop()
+    tank_label_widget["text"] = "{} / {} HL".format(tank_data['VAL'].values[0], tank_data['CAP'].values[0])
+    wine_type_label_widget["text"] = tank_data['TYPE'].values[0]
+
+    tank_frame_label.update_idletasks()
+    wine_type_label_widget.update_idletasks()
+    tank_label_widget.update_idletasks()
