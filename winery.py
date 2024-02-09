@@ -77,7 +77,13 @@ def create_treeview_data(name):
         end = "end"
         for row in excel_data.itertuples(index=False):
             pid = "" if row.PID == 0 else str(row.PID)
-            values = (f"{row.VAL}/{row.CAP}", row.TYPE, row.ADD) if row.VAL != 0 else (f"{row.VAL}/{row.CAP}", "")
+            if row.VAL != 0:
+                if row.ADD != "#0":
+                    values = (f"{row.VAL}/{row.CAP}", row.TYPE, str(row.ADD))
+                else:
+                    values = (f"{row.VAL}/{row.CAP}", row.TYPE, "Nessuna aggiunta")
+            else:
+                values = (f"{row.VAL}/{row.CAP}", "")
 
             if name == "Terra" or name == "Interrato":
                 if row.LOC == name:

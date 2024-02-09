@@ -25,38 +25,45 @@ def update_tank(tank_id, file_path=excel_file_path, new_current_level=None, wine
 
     if new_current_level is not None:
         excel_data.at[index_to_update, 'VAL'] = new_current_level
+        if new_current_level == 0:
+            excel_data.at[index_to_update, 'TYPE'] = "#0"
+            excel_data.at[index_to_update, 'ADD'] = "#0"
     if wine_type is not None:
         excel_data.at[index_to_update, 'TYPE'] = wine_type
     if new_items is not None:
-        excel_data.at[index_to_update, 'ADD'] = new_items       # DA RIVEDERE LA SCRITTURA 
+        reformatted_new_items = reformat_string_to_save(new_items)
+        excel_data.at[index_to_update, 'ADD'] = reformatted_new_items       # DA RIVEDERE LA SCRITTURA 
+    if tank_location is not None:
+        excel_data.at[index_to_update, 'LOC'] = tank_location       # DA RIVEDERE
 
+    # Scrittura
+    excel_data.to_excel(file_path, index=False)
+
+def reformat_string_to_save(input_string):
+    # Replace each newline character with ", "
+    reformatted_string = "#0"
+    if not input_string.isspace():
+        reformatted_string = input_string.replace('\n', ', ')
+
+        # Remove trailing comma if it exists
+        while(True):
+            if reformatted_string.endswith(', '):
+                reformatted_string = reformatted_string[:-2]
+            elif reformatted_string.endswith(','):
+                reformatted_string = reformatted_string[:-1]
+            else:
+                break
+
+        # Remove spaces between commas
+        segments = [segment.strip() for segment in reformatted_string.split(',')]
+        reformatted_string = ', '.join(filter(None, segments))
     
+    return reformatted_string
 
-    # Ora puoi salvare il DataFrame aggiornato in un nuovo file Excel
-    excel_data.to_excel(file_path, index=False)
+def reformat_string_to_print(input_string):
+    if input_string == "#0":
+        reformatted_string = "Nessuna aggiunta"
+    else:
+        reformatted_string = str(input_string).replace(', ', '\n')
 
-
-
-def update_tank_level(tank_id, new_current_level, file_path=excel_file_path):
-    excel_data = read_from_excel(excel_file_path)
-    # Trova l'indice della riga corrispondente al tank_id
-    index_to_update = excel_data.index[excel_data['VASCA'] == tank_id].tolist()[0]
-    # Aggiorna il valore della colonna 'VAL' con il nuovo livello
-    excel_data.at[index_to_update, 'VAL'] = new_current_level
-
-    # Ora puoi salvare il DataFrame aggiornato in un nuovo file Excel
-    excel_data.to_excel(file_path, index=False)
-
-def update_tank_items(tank_id, new_items, file_path=excel_file_path):
-    excel_data = read_from_excel(excel_file_path)
-    # Trova l'indice della riga corrispondente al tank_id
-    index_to_update = excel_data.index[excel_data['VASCA'] == tank_id].tolist()[0]
-    # Aggiorna il valore della colonna 'VAL' con il nuovo livello
-    excel_data.at[index_to_update, 'ADD'] = new_items
-
-    # Ora puoi salvare il DataFrame aggiornato in un nuovo file Excel
-    excel_data.to_excel(file_path, index=False)
-
-"""
-def get_current_level(tank_id, file_path=excel_file_path):
-    excel_data = read_from_excel(file_path)"""
+    return reformatted_string

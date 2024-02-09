@@ -95,7 +95,7 @@ blocked_button_2.grid(row=5, column=0, padx=5, pady=20, sticky="nsew")
 
 # Switch
 theme_switch = ttk.Checkbutton(sidebar_frame, text="Chiaro/Scuro", style="Switch", variable=switch_var, command=change_theme)
-theme_switch.grid(row=9, column=0, padx=5, pady=20, sticky="nsew")
+theme_switch.grid(row=9, column=0, padx=5, pady=20, sticky="s")
 
 # Sizegrip
 sizegrip = ttk.Sizegrip(root)
