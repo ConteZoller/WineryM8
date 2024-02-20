@@ -32,8 +32,8 @@ def change_content(button_number):
     elif button_number == 2:
         create_storage_tabview(pane_1)
     
-    elif button_number == 3:
-        create_tank_management_tabview(pane_1)
+    #elif button_number == 3:
+    #    create_tank_management_tabview(pane_1)
     
     #elif button_number == 4:
     #    create_testing_tabview(pane_1)
@@ -87,10 +87,10 @@ vasche_button.grid(row=2, column=0, padx=5, pady=20, sticky="nsew")
 magazzino_button = ttk.Button(sidebar_frame, text="Magazzino", style="Accent.TButton", command=lambda: change_content(2))
 magazzino_button.grid(row=3, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_1 = ttk.Button(sidebar_frame, text="Gestione Vasca", style="Accent.TButton", command=lambda: change_content(3))
+blocked_button_1 = ttk.Button(sidebar_frame, text="Bloccato", style="Accent.TButton", state="disabled")
 blocked_button_1.grid(row=4, column=0, padx=5, pady=20, sticky="nsew")
 # Accentbutton
-blocked_button_2 = ttk.Button(sidebar_frame, text="Testing", style="Accent.TButton", command=lambda: change_content(4))
+blocked_button_2 = ttk.Button(sidebar_frame, text="Bloccato", style="Accent.TButton", state="disabled")
 blocked_button_2.grid(row=5, column=0, padx=5, pady=20, sticky="nsew")
 
 # Switch

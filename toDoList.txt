@@ -1,5 +1,13 @@
-implementare svuotamento vasca con livello cisterna che scende (progress bar function).
+svuotamento parziale
 
-pianificare aggiornamento file (magari all'uscita del programma o in automatico) pensare bene
+travaso
 
-|--> oppure tornare al vecchio metodo e leggere ogni volta da file.
+taglio
+
+-- iniziare a creare selezione id vasca per effetuare operazioni
+
+priorità su operazioni di sottrazione liquido su serbatoio
+
+rimuovere duplicazione di codice all'interno delle funzioni di settaggio tank
+
+fare in modo che togli se arriva a 0 cancella tutto

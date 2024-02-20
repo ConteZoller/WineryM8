@@ -10,5 +10,5 @@ def create_storage_tabview(pane):
     tab_MAGAZZINO = ttk.Frame(notebook)
     tab_MAGAZZINO.columnconfigure(index=0, weight=1)
     tab_MAGAZZINO.rowconfigure(index=0, weight=1)
-    notebook.add(tab_MAGAZZINO, text="Bloccato")
+    notebook.add(tab_MAGAZZINO, text="In arrivo")
     notebook.pack(expand=True, fill="both", padx=5, pady=5)
