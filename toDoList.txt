@@ -1,13 +1,12 @@
-svuotamento parziale
-
-travaso
-
 taglio
-
--- iniziare a creare selezione id vasca per effetuare operazioni
 
 priorità su operazioni di sottrazione liquido su serbatoio
 
 rimuovere duplicazione di codice all'interno delle funzioni di settaggio tank
 
-fare in modo che togli se arriva a 0 cancella tutto
+cambiare nomi ai buttons nelle show windows
+
+new version:
+fix increment_tank windows (closing the first one it should close both)
+
+

@@ -72,7 +72,7 @@ def create_treeview_tab(notebook, name, pane):
     tank_management_commands_frame.pack(expand=True, fill="both", padx=5, pady=5)
 
     # Crea il pulsante con il nuovo metodo
-    show_tank_info_button = ttk.Button(tank_management_commands_frame, text="Gestisci vasca", command=lambda: prova(pane, treeview))
+    show_tank_info_button = ttk.Button(tank_management_commands_frame, text="Gestisci vasca", command=lambda: show_tank_info(pane, treeview))
 
     # Posiziona il pulsante al centro senza farlo espandere completamente
     show_tank_info_button.pack(padx=10, pady=10, side="top", anchor="center")
@@ -124,10 +124,11 @@ def get_selection_values(treeview_widget):
 
     return item_values
 
-def prova(pane, treeview):
+def show_tank_info(pane, treeview):
     from tank_management import create_tank_management_tabview
     selected_values = get_selection_values(treeview)
-    show_info_tank_id = selected_values[0]
-    for widget in pane.winfo_children():
-        widget.destroy()
-    create_tank_management_tabview(pane, show_info_tank_id)
+    if selected_values:
+        show_info_tank_id = selected_values[0]
+        for widget in pane.winfo_children():
+            widget.destroy()
+        create_tank_management_tabview(pane, show_info_tank_id)

@@ -7,6 +7,91 @@ import pandas as pd
 import tkinter.simpledialog
 from data import *
 
+
+
+
+
+def blend_tank(top_level_widget, treeview, progress_bars, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget):
+    from winery import get_selection_values
+    selected_values = get_selection_values(treeview)
+    blend_tank_id = selected_values[0]
+
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    tank_wine_type = tank_data['TYPE'].values[0]
+    tank_items = tank_data['ADD'].values[0]
+    tank_total_capacity = tank_data['CAP'].values[0]
+
+    target_tank_data = extract_tank_data(blend_tank_id)
+    target_tank_capacity = target_tank_data['CAP'].values[0]
+    target_tank_current_level = target_tank_data['VAL'].values[0]
+    target_tank_items = target_tank_data['ADD'].values[0]
+
+    blend_value = ask_blend_amount(tank_id, blend_tank_id, tank_current_level, target_tank_capacity, target_tank_current_level)
+
+    # Check if user provided a valid blend amount
+    if blend_value is not None:
+        # Calculate the actual blend value based on the destination tank's capacity
+        actual_blend_value = min(blend_value, target_tank_capacity - target_tank_current_level)
+
+        decrement_per_progress = (actual_blend_value / tank_current_level) * 2
+
+        for progress in progress_bars:
+            target_value = max(progress["value"] - actual_blend_value, 0)
+            decrement_progress(progress, target_value, progress["value"], decrement_amount=decrement_per_progress)
+
+        update_tank(tank_id, new_current_level=tank_current_level - actual_blend_value)
+        update_tank(blend_tank_id, new_current_level=target_tank_current_level + actual_blend_value, wine_type=tank_wine_type, new_items=target_tank_items, badd_items=(tank_items, tank_id))
+
+        # Update tank labels and UI elements
+        update_ui_after_blend(tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget)
+
+        top_level_widget.destroy()
+
+def ask_blend_amount(tank_id, target_tank_id, tank_current_level, target_tank_capacity, target_tank_current_level):
+    max_value = min(tank_current_level, target_tank_capacity - target_tank_current_level)
+    blend_value = tkinter.simpledialog.askfloat(f"Taglio vasca {tank_id} in vasca {target_tank_id}", f"Enter blend amount (up to {max_value}):")
+    if blend_value is not None and 0 <= blend_value <= max_value:
+        return blend_value
+    else:
+        # Handle invalid input (optional)
+        return None
+
+def update_ui_after_blend(tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget):
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+    tank_total_capacity = tank_data['CAP'].values[0]
+
+    tank_fill_percentage = calculate_fill_percentage(tank_current_level, tank_total_capacity)
+    tank_frame_label["text"] = f"Livello vasca: {tank_fill_percentage}%"
+
+    if tank_current_level:
+        tank_label_widget["text"] = "{} / {} HL".format(tank_data['VAL'].values[0], tank_data['CAP'].values[0])
+    else:
+        tank_label_widget["text"] = "0 / {} HL".format(tank_data['CAP'].values[0])
+        wine_type_label_widget["text"] = ""
+        tank_textbox_widget.delete("1.0", tk.END)
+
+    tank_textbox_widget.update_idletasks()
+    wine_type_label_widget.update_idletasks()
+    tank_frame_label.update_idletasks()
+    tank_label_widget.update_idletasks()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def increment_progress(progress, target_value, current_value, increment_amount=1):
         new_value = min(current_value + increment_amount, target_value)
         progress["value"] = new_value
@@ -169,7 +254,7 @@ def calculate_fill_percentage(current_level, total_capacity):
     fill_percentage = round(fill_percentage, 2)
     return fill_percentage
 
-def decant_tank(treeview, progress_bars, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget):
+def decant_tank(top_level_widget, treeview, progress_bars, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget):
     from winery import get_selection_values
     selected_values = get_selection_values(treeview)
     decant_tank_id = selected_values[0]
@@ -213,51 +298,102 @@ def decant_tank(treeview, progress_bars, tank_id, tank_frame_label, tank_label_w
 
         tank_frame_label.update_idletasks()
         tank_label_widget.update_idletasks()
+        top_level_widget.destroy()
 
 def show_decant_window(progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox):
-    from winery import create_treeview_data
-    # Crea una nuova finestra Toplevel
-    decant_window = tk.Toplevel()
-    decant_window.title(f"Travaso - Vasca {tank_id}")
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
 
-    # Create a Frame for the Treeview
-    treeFrame = ttk.Frame(decant_window)
-    treeFrame.pack(expand=True, fill="both", padx=5, pady=5)
+    if tank_current_level:
+        from winery import create_treeview_data
+        # Crea una nuova finestra Toplevel
+        decant_window = tk.Toplevel()
+        decant_window.title(f"Travaso - Vasca {tank_id}")
 
-    # Scrollbar
-    treeScroll = ttk.Scrollbar(treeFrame)
-    treeScroll.pack(side="right", fill="y")
+        # Create a Frame for the Treeview
+        treeFrame = ttk.Frame(decant_window)
+        treeFrame.pack(expand=True, fill="both", padx=5, pady=5)
 
-    # Treeview
-    treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2), height=12)
-    treeview.pack(expand=True, fill="both")
-    treeScroll.config(command=treeview.yview)
+        # Scrollbar
+        treeScroll = ttk.Scrollbar(treeFrame)
+        treeScroll.pack(side="right", fill="y")
 
-    # Treeview columns
-    treeview.column("#0", width=0, stretch=False)
-    treeview.column(1, anchor="center", stretch=True)
-    treeview.column(2, anchor="center", stretch=True)
+        # Treeview
+        treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2), height=12)
+        treeview.pack(expand=True, fill="both")
+        treeScroll.config(command=treeview.yview)
 
-    # Treeview headings
-    treeview.heading(1, text="Vasca", anchor="center")
-    treeview.heading(2, text="HL", anchor="center")
+        # Treeview columns
+        treeview.column("#0", width=0, stretch=False)
+        treeview.column(1, anchor="center", stretch=True)
+        treeview.column(2, anchor="center", stretch=True)
 
-    treeview_data = create_treeview_data("Vuote")
+        # Treeview headings
+        treeview.heading(1, text="Vasca", anchor="center")
+        treeview.heading(2, text="HL", anchor="center")
 
-    # Insert treeview data
-    for item in treeview_data:
-        treeview.insert(parent=item[0], index=item[1], iid=item[2], text=item[3], values=item[4])
+        treeview_data = create_treeview_data("Vuote")
 
-    decant_commands_frame = ttk.Frame(decant_window)
-    decant_commands_frame.pack(expand=True, fill="both", padx=5, pady=5)
+        # Insert treeview data
+        for item in treeview_data:
+            treeview.insert(parent=item[0], index=item[1], iid=item[2], text=item[3], values=item[4])
 
-    # Crea il pulsante con il nuovo metodo
-    change_decant_button = ttk.Button(decant_commands_frame, text="Travaso", command=lambda: decant_tank(treeview, progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
+        decant_commands_frame = ttk.Frame(decant_window)
+        decant_commands_frame.pack(expand=True, fill="both", padx=5, pady=5)
 
-    # Posiziona il pulsante al centro senza farlo espandere completamente
-    change_decant_button.pack(padx=10, pady=10, side="top", anchor="center")
+        # Crea il pulsante con il nuovo metodo
+        change_decant_button = ttk.Button(decant_commands_frame, text="Travaso", command=lambda: decant_tank(decant_window, treeview, progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
 
+        # Posiziona il pulsante al centro senza farlo espandere completamente
+        change_decant_button.pack(padx=10, pady=10, side="top", anchor="center")
 
+def show_blend_window(progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox):
+    tank_data = extract_tank_data(tank_id)
+    tank_current_level = tank_data['VAL'].values[0]
+
+    if tank_current_level:
+        from winery import create_treeview_data
+        # Crea una nuova finestra Toplevel
+        blend_window = tk.Toplevel()
+        blend_window.title(f"Taglio - Vasca {tank_id}")
+
+        # Create a Frame for the Treeview
+        treeFrame = ttk.Frame(blend_window)
+        treeFrame.pack(expand=True, fill="both", padx=5, pady=5)
+
+        # Scrollbar
+        treeScroll = ttk.Scrollbar(treeFrame)
+        treeScroll.pack(side="right", fill="y")
+
+        # Treeview
+        treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2), height=12)
+        treeview.pack(expand=True, fill="both")
+        treeScroll.config(command=treeview.yview)
+
+        # Treeview columns
+        treeview.column("#0", width=0, stretch=False)
+        treeview.column(1, anchor="center", stretch=True)
+        treeview.column(2, anchor="center", stretch=True)
+
+        # Treeview headings
+        treeview.heading(1, text="Vasca", anchor="center")
+        treeview.heading(2, text="HL", anchor="center")
+
+        treeview_data = create_treeview_data("Tutte")
+
+        # Insert treeview data
+        for item in treeview_data:
+            if item[2] != tank_id:
+                treeview.insert(parent=item[0], index=item[1], iid=item[2], text=item[3], values=item[4])
+
+        blend_commands_frame = ttk.Frame(blend_window)
+        blend_commands_frame.pack(expand=True, fill="both", padx=5, pady=5)
+
+        # Crea il pulsante con il nuovo metodo
+        change_blend_button = ttk.Button(blend_commands_frame, text="Taglio", command=lambda: blend_tank(blend_window, treeview, progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
+
+        # Posiziona il pulsante al centro senza farlo espandere completamente
+        change_blend_button.pack(padx=10, pady=10, side="top", anchor="center")
 
 def create_tank_view(tank_management_tab, tank_id):
     tank_data = extract_tank_data(tank_id)
@@ -327,7 +463,7 @@ def create_tank_view(tank_management_tab, tank_id):
     decant_button = ttk.Button(tank_commands_border, text="Travaso", command=lambda: show_decant_window(progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
     decant_button.grid(row=4, column=0, padx=10, pady=10, sticky="nesw")
 
-    blend_button = ttk.Button(tank_commands_border, text="Taglio")
+    blend_button = ttk.Button(tank_commands_border, text="Taglio", command=lambda: show_blend_window(progress_bars, tank_id, tank_frame, tank_label, info_label, tank_textbox))
     blend_button.grid(row=5, column=0, padx=10, pady=10, sticky="nesw")
 
 
@@ -372,11 +508,82 @@ def create_tank_view(tank_management_tab, tank_id):
     items_frame.columnconfigure(0, weight=1)
     items_frame.rowconfigure(0, weight=1)
 
-    tank_textbox = scrolledtext.ScrolledText(items_frame)
+    items_notebook = ttk.Notebook(items_frame)
+    tank_items_tab = ttk.Frame(items_notebook)
+    tank_items_tab.columnconfigure(0, weight=1)
+    tank_items_tab.rowconfigure(0, weight=1)
+
+    tank_entries = tank_data['BADD'].values[0]
+
+    items_notebook.add(tank_items_tab, text=f"Tutte")
+    items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+    tank_textbox = scrolledtext.ScrolledText(tank_items_tab)
     items = tank_data['ADD'].values[0]
-    reformatted_items = reformat_string_to_print(items)
+    reformatted_items = reformat_ADD_string_to_print(items)
     tank_textbox.insert("end", reformatted_items)
     tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+
+    if tank_entries != "#0":
+        tank_entries = parse_input_string(tank_entries)
+        
+        for i, tank_entry in enumerate(tank_entries):
+            tank_tab = ttk.Frame(items_notebook)
+            items_notebook.add(tank_tab, text=f"Vasca {tank_entry[0]}")  # Usa il primo valore come nome del tab
+            items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+            tank_tab.columnconfigure(0, weight=1)
+            tank_tab.rowconfigure(0, weight=1)
+            tank_textbox = scrolledtext.ScrolledText(tank_tab)
+            reformatted_items = reformat_ADD_string_to_print(tank_entry[1])
+
+            tank_textbox.insert("end", reformatted_items)
+            tank_textbox.configure(state="disable")
+            tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+            
+    """# Tab per ogni tank
+    if tank_entries != "#0":
+        for i, tank_entry in enumerate(tank_entries):
+            if tank_entry.strip():
+                tank_tab = ttk.Frame(items_notebook)
+                
+                items_notebook.add(tank_tab, text=f"Vasca {i}")
+                items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+                tank_textbox = scrolledtext.ScrolledText(tank_tab)
+                reformatted_items = reformat_BADD_string_to_print(tank_entry)
+                reformatted_items = reformat_ADD_string_to_print(reformatted_items)
+                tank_textbox.insert("end", reformatted_items)
+                tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")"""
+    
+    #####################
+
+
+
+
+
+    #######################
+    """
+    all_textbox = scrolledtext.ScrolledText(all_tab)
+    all_text = ""
+    for entry in tank_entries:
+        if entry.strip():  # Ignora eventuali stringhe vuote
+            items = entry.strip().split("#")
+            reformatted_items = reformat_ADD_string_to_print(items[1])
+            all_text += reformatted_items + "\n"
+    all_textbox.insert("end", all_text)
+    all_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+    
+    # Tab per ogni tank
+    for i, tank_entry in enumerate(tank_entries, start=1):
+        if tank_entry.strip():
+            tank_tab = ttk.Frame(items_notebook)
+            items_notebook.add(tank_tab, text=f"Vasca {i}")
+
+            tank_textbox = scrolledtext.ScrolledText(tank_tab)
+            items = tank_entry.strip().split("#")
+            reformatted_items = reformat_ADD_string_to_print(items[1])
+            tank_textbox.insert("end", reformatted_items)
+            tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")"""
+    #blend_items = tank_data['BADD'].values[0]
+    
 
 
 
