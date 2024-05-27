@@ -44,22 +44,22 @@ def create_treeview_tab(notebook, name, pane):
     treeScroll.pack(side="right", fill="y")
 
     # Treeview
-    treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2, 3, 4), height=12)
+    treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2, 3), height=12)
     treeview.pack(expand=True, fill="both")
     treeScroll.config(command=treeview.yview)
 
     # Treeview columns
     treeview.column("#0", width=0, stretch=False)
-    treeview.column(1, anchor="center", width=100, stretch=False)
-    treeview.column(2, anchor="center", width=100, stretch=False)
-    treeview.column(3, anchor="center", width=200, stretch=False)
-    treeview.column(4, anchor="w", stretch=True)  # Ultima colonna che può espandersi
+    treeview.column(1, anchor="center", width=100, stretch=True)
+    treeview.column(2, anchor="center", width=100, stretch=True)
+    treeview.column(3, anchor="center", width=200, stretch=True)
+    #treeview.column(4, anchor="w", stretch=True)  # Ultima colonna che può espandersi
 
     # Treeview headings
     treeview.heading(1, text="Vasca", anchor="center")
     treeview.heading(2, text="HL", anchor="center")
     treeview.heading(3, text="Tipologia", anchor="center")
-    treeview.heading(4, text="Aggiunte", anchor="w")
+    #treeview.heading(4, text="Aggiunte", anchor="w")
 
     treeview_data = create_treeview_data(name)
 

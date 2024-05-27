@@ -8,9 +8,6 @@ import tkinter.simpledialog
 from data import *
 
 
-
-
-
 def blend_tank(top_level_widget, treeview, progress_bars, tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget):
     from winery import get_selection_values
     selected_values = get_selection_values(treeview)
@@ -21,13 +18,16 @@ def blend_tank(top_level_widget, treeview, progress_bars, tank_id, tank_frame_la
     tank_wine_type = tank_data['TYPE'].values[0]
     tank_items = tank_data['ADD'].values[0]
     tank_total_capacity = tank_data['CAP'].values[0]
+    tank_badd_items = tank_data['BADD'].values[0]
 
     target_tank_data = extract_tank_data(blend_tank_id)
     target_tank_capacity = target_tank_data['CAP'].values[0]
     target_tank_current_level = target_tank_data['VAL'].values[0]
     target_tank_items = target_tank_data['ADD'].values[0]
+    target_tank_badd_items = target_tank_data['BADD'].values[0]
 
     blend_value = ask_blend_amount(tank_id, blend_tank_id, tank_current_level, target_tank_capacity, target_tank_current_level)
+    print(f"Blend tank id: {blend_tank_id}")
 
     # Check if user provided a valid blend amount
     if blend_value is not None:
@@ -40,8 +40,19 @@ def blend_tank(top_level_widget, treeview, progress_bars, tank_id, tank_frame_la
             target_value = max(progress["value"] - actual_blend_value, 0)
             decrement_progress(progress, target_value, progress["value"], decrement_amount=decrement_per_progress)
 
+        # Aggiorna i badd items della vasca di destinazione
+        new_badd_items = target_tank_badd_items
+        if new_badd_items != "#0":
+            new_badd_items += f"#TANK{blend_tank_id}-{tank_wine_type}#" + tank_items + "#END_TANK#\n"
+        else:
+            new_badd_items = tank_items + "#END_TANK#\n" #f"#TANK{tank_id}-{tank_wine_type}#" + 
+
+        if tank_badd_items != "#0":
+            new_badd_items += tank_badd_items + "#END_TANK#\n" #f"#TANK{tank_id}-{tank_wine_type}#" +
+
         update_tank(tank_id, new_current_level=tank_current_level - actual_blend_value)
-        update_tank(blend_tank_id, new_current_level=target_tank_current_level + actual_blend_value, wine_type=tank_wine_type, new_items=target_tank_items, badd_items=(tank_items, tank_id))
+        print(f"Blend tank id: {blend_tank_id}")
+        update_tank(blend_tank_id, new_current_level=target_tank_current_level + actual_blend_value, wine_type=tank_wine_type, new_items=target_tank_items, badd_items=(new_badd_items, tank_id, tank_wine_type))
 
         # Update tank labels and UI elements
         update_ui_after_blend(tank_id, tank_frame_label, tank_label_widget, wine_type_label_widget, tank_textbox_widget)
@@ -76,17 +87,6 @@ def update_ui_after_blend(tank_id, tank_frame_label, tank_label_widget, wine_typ
     wine_type_label_widget.update_idletasks()
     tank_frame_label.update_idletasks()
     tank_label_widget.update_idletasks()
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -504,7 +504,7 @@ def create_tank_view(tank_management_tab, tank_id):
     items_frame = ttk.LabelFrame(tank_management_tab, labelanchor="n", text=f"Aggiunte", padding=(20, 10))
     items_frame.grid(row=0, column=2, padx=(20, 10), pady=(20, 10), sticky="nesw")
 
-    #essenziale
+    # Essenziale
     items_frame.columnconfigure(0, weight=1)
     items_frame.rowconfigure(0, weight=1)
 
@@ -513,80 +513,34 @@ def create_tank_view(tank_management_tab, tank_id):
     tank_items_tab.columnconfigure(0, weight=1)
     tank_items_tab.rowconfigure(0, weight=1)
 
-    tank_entries = tank_data['BADD'].values[0]
-
-    items_notebook.add(tank_items_tab, text=f"Tutte")
+    items_notebook.add(tank_items_tab, text=f"Nuove")
     items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+
+    # ScrolledText per "ADD" items
     tank_textbox = scrolledtext.ScrolledText(tank_items_tab)
     items = tank_data['ADD'].values[0]
-    reformatted_items = reformat_ADD_string_to_print(items)
-    tank_textbox.insert("end", reformatted_items)
+    tank_textbox.insert("end", items)
     tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
 
+    # Aggiungi nuovi tab per ogni "BADD" item
+    tank_entries = tank_data['BADD'].values[0]
+    print(tank_entries)
     if tank_entries != "#0":
         tank_entries = parse_input_string(tank_entries)
         
         for i, tank_entry in enumerate(tank_entries):
             tank_tab = ttk.Frame(items_notebook)
-            items_notebook.add(tank_tab, text=f"Vasca {tank_entry[0]}")  # Usa il primo valore come nome del tab
+            items_notebook.add(tank_tab, text=f"Vasca {tank_entry[0]} - {tank_entry[1]}")  # Usa il primo valore come nome del tab
             items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
             tank_tab.columnconfigure(0, weight=1)
             tank_tab.rowconfigure(0, weight=1)
-            tank_textbox = scrolledtext.ScrolledText(tank_tab)
-            reformatted_items = reformat_ADD_string_to_print(tank_entry[1])
-
-            tank_textbox.insert("end", reformatted_items)
-            tank_textbox.configure(state="disable")
-            tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
             
-    """# Tab per ogni tank
-    if tank_entries != "#0":
-        for i, tank_entry in enumerate(tank_entries):
-            if tank_entry.strip():
-                tank_tab = ttk.Frame(items_notebook)
-                
-                items_notebook.add(tank_tab, text=f"Vasca {i}")
-                items_notebook.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
-                tank_textbox = scrolledtext.ScrolledText(tank_tab)
-                reformatted_items = reformat_BADD_string_to_print(tank_entry)
-                reformatted_items = reformat_ADD_string_to_print(reformatted_items)
-                tank_textbox.insert("end", reformatted_items)
-                tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")"""
-    
-    #####################
-
-
-
-
-
-    #######################
-    """
-    all_textbox = scrolledtext.ScrolledText(all_tab)
-    all_text = ""
-    for entry in tank_entries:
-        if entry.strip():  # Ignora eventuali stringhe vuote
-            items = entry.strip().split("#")
-            reformatted_items = reformat_ADD_string_to_print(items[1])
-            all_text += reformatted_items + "\n"
-    all_textbox.insert("end", all_text)
-    all_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
-    
-    # Tab per ogni tank
-    for i, tank_entry in enumerate(tank_entries, start=1):
-        if tank_entry.strip():
-            tank_tab = ttk.Frame(items_notebook)
-            items_notebook.add(tank_tab, text=f"Vasca {i}")
-
-            tank_textbox = scrolledtext.ScrolledText(tank_tab)
-            items = tank_entry.strip().split("#")
-            reformatted_items = reformat_ADD_string_to_print(items[1])
-            tank_textbox.insert("end", reformatted_items)
-            tank_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")"""
-    #blend_items = tank_data['BADD'].values[0]
-    
-
-
-
+            # ScrolledText per "BADD" items
+            badd_textbox = scrolledtext.ScrolledText(tank_tab)
+            badd_textbox.insert("end", tank_entry[2])
+            badd_textbox.configure(state="disable")  # Rende il testo non modificabile
+            badd_textbox.grid(row=0, column=0, padx=5, pady=(0, 10), sticky="news")
+ 
 def create_tank_management_tab(notebook, tank_id):
     tank_management_tab = ttk.Frame(notebook)
     tank_management_tab.columnconfigure(0, weight=1, uniform="columnuniform")
